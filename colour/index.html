@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Keystone Colour Architecture</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Mulish:wght@600;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one reading column; the tier diagram is a horizontal chain that stacks on phones. Keystone's own purple + mint, slate-tinted neutrals. */
+:root{
+  --bg:#F6F5FA; --panel:#FFFFFF; --ink:#1E1430; --muted:#5E5670; --line:#E3DFEC;
+  --accent:#501584; --accent-soft:#EFE7F8; --mint:#4FE3C2;
+  --display:"Mulish", system-ui, sans-serif; --body:"Lato", system-ui, sans-serif; --mono:"JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#110B18;--panel:#1A1324;--ink:#F1ECF8;--muted:#B3A9C4;--line:#33293F;--accent:#C9A2EE;--accent-soft:#2A1D3A;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#110B18;--panel:#1A1324;--ink:#F1ECF8;--muted:#B3A9C4;--line:#33293F;--accent:#C9A2EE;--accent-soft:#2A1D3A;color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font:16px/1.6 var(--body)}
+.wrap{max-width:68rem;margin:0 auto;padding-block:2.5rem 4rem;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:3.5rem}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.15}
+h1{font-size:clamp(2rem,5vw,3rem);font-weight:800;letter-spacing:-.02em}
+h2{font-size:1.5rem;font-weight:800}
+h3{font-size:1.0625rem;font-weight:600}
+p{margin:0;max-width:42rem}
+.eyebrow{font:600 .75rem/1 var(--display);letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.lede{font-size:1.125rem;color:var(--muted)}
+.mono,code{font-family:var(--mono);font-size:.8125rem}
+section{display:flex;flex-direction:column;gap:1.25rem}
+.head{display:flex;flex-direction:column;gap:.75rem}
+/* brand switch */
+.tabs{display:flex;flex-wrap:wrap;gap:.5rem}
+.tabs button{font:600 .875rem var(--display);padding:.5rem .875rem;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--panel)}
+.tabs button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+/* tier chain */
+.chain{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;gap:.75rem;align-items:stretch}
+.tier{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.125rem;display:flex;flex-direction:column;gap:.625rem;min-width:0}
+.tier .n{font:600 .6875rem/1 var(--display);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.tier p{font-size:.875rem;color:var(--muted)}
+.arrow{display:flex;align-items:center;color:var(--muted);font-size:1.25rem}
+.val{display:flex;gap:.625rem;align-items:center;margin-top:auto}
+.sw{width:2.25rem;height:2.25rem;border-radius:8px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.14);flex:0 0 auto}
+.val div{display:flex;flex-direction:column;min-width:0}
+.val code{overflow-wrap:anywhere}
+.val .hex{color:var(--muted);font-size:.75rem}
+.demo{border-radius:10px;padding:1rem;display:flex;flex-direction:column;gap:.625rem}
+.demo .t{font:800 1rem var(--display)}
+.demo .l{font-size:.8125rem;text-decoration:underline}
+.demo .b{align-self:flex-start;font:700 .8125rem var(--body);border-radius:6px;padding:.4rem .8rem}
+@media (max-width:820px){.chain{grid-template-columns:1fr}.arrow{justify-content:center;transform:rotate(90deg);height:1.25rem}}
+/* layers table */
+.tbl{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:14px}
+table{border-collapse:collapse;width:100%;min-width:40rem}
+th,td{text-align:left;padding:.75rem 1rem;border-bottom:1px solid var(--line);vertical-align:top;font-size:.9375rem}
+th{font:600 .6875rem var(--display);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+tr:last-child td{border-bottom:0}
+td:first-child{font-family:var(--display);font-weight:600;white-space:nowrap}
+/* surface grid */
+.surfaces{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.75rem}
+@media (max-width:1000px){.surfaces{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.surfaces{grid-template-columns:1fr}}
+.cap{font-size:.75rem;color:var(--muted);margin-top:.25rem}
+/* numbers */
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.75rem}
+@media (max-width:820px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1rem;display:flex;flex-direction:column;gap:.25rem}
+.stat b{font:800 1.75rem/1.1 var(--display);font-variant-numeric:tabular-nums}
+.stat span{font-size:.8125rem;color:var(--muted)}
+/* steps + script */
+ol.steps{margin:0;padding:0;list-style:none;display:grid;gap:.625rem;counter-reset:s}
+ol.steps li{counter-increment:s;display:grid;grid-template-columns:2rem 1fr;gap:.75rem;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:.875rem 1rem}
+ol.steps li::before{content:counter(s);font:800 .875rem/2rem var(--display);width:2rem;height:2rem;border-radius:50%;background:var(--accent-soft);color:var(--accent);text-align:center}
+ol.steps li div{display:flex;flex-direction:column;gap:.125rem;min-width:0}
+ol.steps li span{font-size:.875rem;color:var(--muted)}
+.script{background:var(--accent-soft);border-radius:14px;padding:1.25rem 1.375rem;display:flex;flex-direction:column;gap:.75rem}
+.script p{font-size:1.0625rem;max-width:none}
+.script p b{color:var(--accent)}
+/* flow diagram */
+.flow{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:1rem;overflow-x:auto}
+.flow svg{display:block;width:100%;min-width:760px;height:auto}
+.flow .box{fill:var(--panel);stroke:var(--line);stroke-width:1.25}
+.flow .box.hot{stroke:var(--accent);stroke-width:1.5}
+.flow .hd{font:800 15px var(--display);fill:var(--ink)}
+.flow .sub{font:400 12px var(--body);fill:var(--muted)}
+.flow .nm{font:600 12px var(--mono);fill:var(--ink)}
+.flow .hx{font:400 11px var(--mono);fill:var(--muted)}
+.flow .lbl{font:600 11px var(--display);letter-spacing:.08em;text-transform:uppercase;fill:var(--accent)}
+.flow .wire{fill:none;stroke:var(--muted);stroke-opacity:.55;stroke-width:1.5}
+.flow .chip{stroke:rgba(0,0,0,.18);stroke-width:1}
+.flow .ct{font:800 15px var(--display)}
+.flow .cb{font:700 12px var(--body)}
+/* matrix */
+.matrix{display:grid;grid-template-columns:7.5rem repeat(4,minmax(0,1fr));gap:.5rem;align-items:stretch}
+.matrix .mh{font:600 .6875rem var(--display);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);align-self:end;padding-bottom:.25rem}
+.matrix .rh{font:600 .875rem var(--display);align-self:center}
+.matrix .demo{padding:.75rem;gap:.375rem;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.matrix .demo .t{font-size:.875rem}
+.matrix .demo .b{font-size:.75rem;padding:.25rem .6rem}
+.mwrap{overflow-x:auto}
+.mwrap .matrix{min-width:34rem}
+@media (prefers-reduced-motion:no-preference){.sw,.demo{transition:background-color .25s,color .25s}}
+</style>
+
+<div class="wrap">
+  <header class="head">
+    <div class="eyebrow">Keystone design system</div>
+    <h1>Primitives, Theme, Surface</h1>
+    <p class="lede">Every colour in Keystone passes through three layers. Each one answers a single question, and components only ever see the last one. Pick a brand to follow one colour through all three.</p>
+    <div class="tabs" role="group" aria-label="Brand">
+      <button type="button" data-b="smart" aria-pressed="true">Smart</button>
+      <button type="button" data-b="zurich" aria-pressed="false">Zurich</button>
+      <button type="button" data-b="niac" aria-pressed="false">New Ireland</button>
+      <button type="button" data-b="keystone" aria-pressed="false">Keystone</button>
+      <button type="button" data-b="finhabits" aria-pressed="false">Finhabits</button>
+    </div>
+  </header>
+
+  <section aria-label="The big picture">
+    <div class="head">
+      <h2>The big picture</h2>
+      <p>One card, two grounds. The theme gives every role a primitive, the surface decides which roles apply on this ground, and the card only ever asks for <code>core</code> and <code>content-primary</code>. On Inverse the same primitives simply swap jobs.</p>
+    </div>
+    <div class="flow"><svg id="flow" viewBox="0 0 1040 470" role="img" aria-label="Diagram: primitives feed the theme, the theme feeds two surfaces, each surface paints the same card"></svg></div>
+  </section>
+
+  <section aria-label="One colour through the layers">
+    <div class="chain">
+      <div class="tier">
+        <div class="n">Layer 1 · Primitive</div>
+        <h3>What colours exist</h3>
+        <p>The raw palette. Named by family and step, never by use. Hidden from designers.</p>
+        <div class="val"><span class="sw" id="p-sw"></span><div><code id="p-name"></code><span class="hex mono" id="p-hex"></span></div></div>
+      </div>
+      <div class="arrow" aria-hidden="true">→</div>
+      <div class="tier">
+        <div class="n">Layer 2 · Theme</div>
+        <h3>What it is for</h3>
+        <p>Each brand, light and dark, points every role at a primitive.</p>
+        <div class="val"><span class="sw" id="t-sw"></span><div><code>content-primary</code><span class="hex mono" id="t-to"></span></div></div>
+      </div>
+      <div class="arrow" aria-hidden="true">→</div>
+      <div class="tier">
+        <div class="n">Layer 3 · Surface</div>
+        <h3>What changes on a dark ground</h3>
+        <p>On Inverse, the same role points at a different primitive.</p>
+        <div class="val"><span class="sw" id="s-sw"></span><div><code>content-primary · inverse</code><span class="hex mono" id="s-to"></span></div></div>
+      </div>
+      <div class="arrow" aria-hidden="true">→</div>
+      <div class="tier">
+        <div class="n">Component</div>
+        <h3>What people see</h3>
+        <p>The heading only knows <code>content-primary</code>.</p>
+        <div class="demo" id="c-demo"><span class="t">Your pension</span><span class="b" id="c-btn">Top up</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="head">
+      <h2>One component, four grounds</h2>
+      <p>The same card, with no colour of its own, placed on each surface for the selected brand. The labels show the primitive each role lands on. Subtle only swaps the background and borders; Inverse and Brand re-point the text and actions too. A fifth mode, Dashboard body, is the grey page behind dashboard cards and works like Subtle.</p>
+    </div>
+    <div class="surfaces" id="surfaces"></div>
+  </section>
+
+  <section>
+    <div class="head">
+      <h2>Every brand on every ground</h2>
+      <p>Rows are themes, columns are surfaces. All twenty cards are the same component with no colour of its own. That is why Theme and Surface are separate: in one collection this would need a mode for every brand and ground (10 themes × 5 surfaces = 50), and every new client would add five more. Kept apart, a new client adds two Theme modes and Surface never changes.</p>
+    </div>
+    <div class="mwrap"><div class="matrix" id="matrix"></div></div>
+  </section>
+
+  <section>
+    <div class="head">
+      <h2>What each layer answers</h2>
+    </div>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>Layer</th><th>Question</th><th>Size</th><th>Example</th><th>Who touches it</th></tr></thead>
+        <tbody>
+          <tr><td>Primitives</td><td>What colours exist?</td><td>161 colours, 1 mode</td><td><code>zurich/indigo/800</code> = #081C63</td><td>Design system team only</td></tr>
+          <tr><td>Theme</td><td>What is each colour for, per brand?</td><td>~46 roles × 10 modes</td><td><code>content-primary</code> → <code>zurich/indigo/800</code></td><td>Set once per page</td></tr>
+          <tr><td>Surface</td><td>What changes on this ground?</td><td>47 roles × 5 modes</td><td>On Inverse, <code>content-primary</code> → <code>core/neutral/0</code></td><td>Set per block (nav, banner, footer)</td></tr>
+          <tr><td>Components</td><td>Nothing. They just read roles.</td><td>Every component</td><td>Heading reads <code>content-primary</code></td><td>Everyone builds with these</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="cap">In code, the same three layers: <code>--color-zurich-indigo-800</code>, <code>[data-theme="zurich-light"]</code> and <code>[data-surface="inverse"]</code>.</p>
+  </section>
+
+  <section>
+    <div class="head">
+      <h2>Adding a new client</h2>
+      <p>The brief stays small. The system does the rest.</p>
+    </div>
+    <ol class="steps">
+      <li><div><b>The client gives five or six colours</b><span>Primary, secondary, accent, maybe a neutral. Nothing else.</span></div></li>
+      <li><div><b>Each colour becomes a scale</b><span>A family in the client's own namespace, stepped by lightness: <code>client/blue/100</code> to <code>client/blue/900</code>.</span></div></li>
+      <li><div><b>Map the roles</b><span>Point the new Theme mode's roles at primitives: core palette for status and neutrals, the client's own family for brand roles.</span></div></li>
+      <li><div><b>Run the contrast check</b><span>Every text role at 4.5:1 and every border, focus ring and chart series at 3:1, on every surface.</span></div></li>
+      <li><div><b>Ship</b><span>No component changes. Every screen in every app picks up the new brand.</span></div></li>
+    </ol>
+  </section>
+
+</div>
+
+<script>
+const D={"smart":{"default":{"core":["core/neutral/0","#FFFFFF"],"content-primary":["smart/blue/800","#003357"],"highlight-core":["smart/petrol/500","#00819D"],"highlight-content":["core/neutral/0","#FFFFFF"],"link":["smart/petrol/550","#007793"]},"subtle":{"core":["core/slate/50","#F5F7FB"],"content-primary":["smart/blue/800","#003357"],"highlight-core":["smart/petrol/500","#00819D"],"highlight-content":["core/neutral/0","#FFFFFF"],"link":["smart/petrol/550","#007793"]},"inverse":{"core":["smart/blue/800","#003357"],"content-primary":["core/neutral/0","#FFFFFF"],"highlight-core":["core/neutral/0","#FFFFFF"],"highlight-content":["smart/blue/800","#003357"],"link":["core/neutral/0","#FFFFFF"]},"brand":{"core":["smart/mint/200","#7BE0C2"],"content-primary":["smart/blue/800","#003357"],"highlight-core":["smart/blue/675","#264C73"],"highlight-content":["core/neutral/0","#FFFFFF"],"link":["core/neutral/850","#222222"]}},"zurich":{"default":{"core":["core/neutral/0","#FFFFFF"],"content-primary":["zurich/indigo/800","#081C63"],"highlight-core":["zurich/indigo/800","#081C63"],"highlight-content":["core/neutral/0","#FFFFFF"],"link":["core/blue/550","#2167AE"]},"subtle":{"core":["core/neutral/50","#F5F5F5"],"content-primary":["zurich/indigo/800","#081C63"],"highlight-core":["zurich/indigo/800","#081C63"],"highlight-content":["core/neutral/0","#FFFFFF"],"link":["core/blue/550","#2167AE"]},"inverse":{"core":["zurich/indigo/900","#05123F"],"content-primary":["core/neutral/0","#FFFFFF"],"highlight-core":["core/neutral/0","#FFFFFF"],"highlight-content":["zurich/indigo/900","#05123F"],"link":["core/neutral/0","#FFFFFF"]},"brand":{"core":["zurich/sand/150","#DCD6C4"],"content-primary":["zurich/indigo/800","#081C63"],"highlight-core":["zurich/indigo/775","#0F2478"],"highlight-content":["core/neutral/0","#FFFFFF"],"link":["zurich/indigo/800","#081C63"]}},"niac":{"default":{"core":["core/neutral/0","#FFFFFF"],"content-primary":["niac/sky/700","#00446A"],"highlight-core":["niac/olive/250","#B9C894"],"highlight-content":["niac/sky/700","#00446A"],"link":["niac/sky/700","#00446A"]},"subtle":{"core":["core/neutral/50","#F5F5F5"],"content-primary":["niac/sky/700","#00446A"],"highlight-core":["niac/olive/250","#B9C894"],"highlight-content":["niac/sky/700","#00446A"],"link":["niac/sky/700","#00446A"]},"inverse":{"core":["core/blue/800","#0C2943"],"content-primary":["core/neutral/0","#FFFFFF"],"highlight-core":["core/neutral/0","#FFFFFF"],"highlight-content":["core/blue/800","#0C2943"],"link":["core/neutral/0","#FFFFFF"]},"brand":{"core":["niac/olive/250","#B9C894"],"content-primary":["niac/sky/700","#00446A"],"highlight-core":["core/neutral/0","#FFFFFF"],"highlight-content":["niac/sky/700","#00446A"],"link":["niac/sky/700","#00446A"]}},"keystone":{"default":{"core":["core/neutral/0","#FFFFFF"],"content-primary":["keystone/purple/700","#501584"],"highlight-core":["keystone/purple/700","#501584"],"highlight-content":["core/neutral/0","#FFFFFF"],"link":["keystone/purple/700","#501584"]},"subtle":{"core":["core/slate/50","#F5F7FB"],"content-primary":["keystone/purple/700","#501584"],"highlight-core":["keystone/purple/700","#501584"],"highlight-content":["core/neutral/0","#FFFFFF"],"link":["keystone/purple/700","#501584"]},"inverse":{"core":["keystone/purple/700","#501584"],"content-primary":["core/neutral/0","#FFFFFF"],"highlight-core":["core/neutral/0","#FFFFFF"],"highlight-content":["keystone/purple/850","#28005C"],"link":["core/neutral/0","#FFFFFF"]},"brand":{"core":["keystone/mint/225","#4FE3C2"],"content-primary":["keystone/purple/700","#501584"],"highlight-core":["keystone/purple/700","#501584"],"highlight-content":["core/neutral/0","#FFFFFF"],"link":["keystone/purple/700","#501584"]}},"finhabits":{"default":{"core":["core/neutral/0","#FFFFFF"],"content-primary":["core/neutral/1000","#000000"],"highlight-core":["finhabits/yellow/100","#FFF04B"],"highlight-content":["core/neutral/1000","#000000"],"link":["core/neutral/1000","#000000"]},"subtle":{"core":["core/slate/50","#F5F7FB"],"content-primary":["core/neutral/1000","#000000"],"highlight-core":["finhabits/yellow/100","#FFF04B"],"highlight-content":["core/neutral/1000","#000000"],"link":["core/neutral/1000","#000000"]},"inverse":{"core":["finhabits/yellow/100","#FFF04B"],"content-primary":["core/neutral/1000","#000000"],"highlight-core":["core/neutral/1000","#000000"],"highlight-content":["core/neutral/0","#FFFFFF"],"link":["core/neutral/1000","#000000"]},"brand":{"core":["core/neutral/1000","#000000"],"content-primary":["core/neutral/0","#FFFFFF"],"highlight-core":["finhabits/yellow/100","#FFF04B"],"highlight-content":["core/neutral/1000","#000000"],"link":["core/neutral/0","#FFFFFF"]}}};
+const NAMES={default:'Default',subtle:'Subtle',inverse:'Inverse',brand:'Brand'};
+const $=id=>document.getElementById(id);
+function card(s){
+  const el=document.createElement('div'); el.className='tier';
+  el.innerHTML=`<div class="n">${NAMES[s.k]}</div>
+  <div class="demo" style="background:${s.core[1]};color:${s['content-primary'][1]};box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)">
+    <span class="t">Your pension</span>
+    <span class="l" style="color:${s.link[1]}">View statement</span>
+    <span class="b" style="background:${s['highlight-core'][1]};color:${s['highlight-content'][1]}">Top up</span>
+  </div>
+  <div class="cap mono">core → ${s.core[0]}<br>content-primary → ${s['content-primary'][0]}<br>highlight-core → ${s['highlight-core'][0]}</div>`;
+  return el;
+}
+function show(b){
+  drawFlow(b);
+  const d=D[b], base=d.default['content-primary'], inv=d.inverse['content-primary'];
+  $('p-sw').style.background=base[1]; $('p-name').textContent=base[0]; $('p-hex').textContent=base[1];
+  $('t-sw').style.background=base[1]; $('t-to').textContent='→ '+base[0];
+  $('s-sw').style.background=inv[1]; $('s-to').textContent='→ '+inv[0];
+  const demo=$('c-demo'); demo.style.background=d.default.core[1]; demo.style.color=base[1]; demo.style.boxShadow='inset 0 0 0 1px rgba(0,0,0,.08)';
+  const btn=$('c-btn'); btn.style.background=d.default['highlight-core'][1]; btn.style.color=d.default['highlight-content'][1];
+  const g=$('surfaces'); g.replaceChildren(...['default','subtle','inverse','brand'].map(k=>card({k,...d[k]})));
+  document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.b===b)));
+}
+
+const BN={smart:'Smart',zurich:'Zurich',niac:'New Ireland',keystone:'Keystone',finhabits:'Finhabits'};
+function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+function drawFlow(b){
+  const d=D[b], df=d.default, iv=d.inverse;
+  const roles=[['core',df.core],['content-primary',df['content-primary']],['on-inverse core',iv.core],['on-inverse content-primary',iv['content-primary']]];
+  const ry=[118,162,278,322];
+  const uniq=[];roles.forEach(r=>{if(!uniq.find(u=>u[0]===r[1][0]))uniq.push(r[1])});
+  const span=220, top=232-span/2;
+  const py=uniq.map((u,i)=>uniq.length===1?232:top+i*span/(uniq.length-1));
+  let o='';
+  const col=(x,n,t,sub)=>`<text class="lbl" x="${x}" y="30">${n}</text><text class="hd" x="${x}" y="52">${t}</text><text class="sub" x="${x}" y="70">${sub}</text>`;
+  o+=col(20,'1 · Primitives','What colours exist','161 colours · one mode');
+  o+=col(280,'2 · Theme',`${BN[b]} light`,'10 modes · set on the page');
+  o+=col(590,'3 · Surface','Which roles apply here','5 modes · set per block');
+  o+=col(860,'Component','The same card twice','reads Surface only');
+  // wires prim -> theme
+  roles.forEach((r,i)=>{const j=uniq.findIndex(u=>u[0]===r[1][0]);const y1=py[j],y2=ry[i];o+=`<path class="wire" d="M232 ${y1} C 256 ${y1}, 256 ${y2}, 282 ${y2}"/>`;});
+  // wires theme -> surface (straight) and surface -> card
+  ry.forEach(y=>{o+=`<path class="wire" d="M530 ${y} L 592 ${y}"/>`;});
+  o+=`<path class="wire" d="M820 140 L 862 140"/><path class="wire" d="M820 300 L 862 300"/>`;
+  // primitives
+  uniq.forEach((u,i)=>{const y=py[i]-24;o+=`<rect class="box" x="20" y="${y}" width="212" height="48" rx="10"/><rect class="chip" x="30" y="${y+10}" width="28" height="28" rx="6" fill="${u[1]}"/><text class="nm" x="68" y="${y+21}">${esc(u[0])}</text><text class="hx" x="68" y="${y+37}">${u[1]}</text>`;});
+  // theme box
+  o+=`<rect class="box hot" x="280" y="88" width="250" height="262" rx="12"/>`;
+  roles.forEach((r,i)=>{const y=ry[i];o+=`<rect class="chip" x="292" y="${y-10}" width="20" height="20" rx="5" fill="${r[1][1]}"/><text class="nm" x="322" y="${y-1}">${r[0]}</text><text class="hx" x="322" y="${y+13}">→ ${esc(r[1][0])}</text>`;});
+  o+=`<line x1="292" x2="518" y1="220" y2="220" stroke="var(--line)"/>`;
+  // surface boxes
+  const sb=(y,name,a,bb)=>`<rect class="box" x="590" y="${y}" width="230" height="104" rx="12"/><text class="hd" x="604" y="${y+24}" style="font-size:13px">${name}</text><text class="nm" x="604" y="${y+50}">core</text><text class="hx" x="604" y="${y+64}">= ${a}</text><text class="nm" x="604" y="${y+84}">content-primary</text><text class="hx" x="604" y="${y+98}" >= ${bb}</text>`;
+  o+=sb(88,'Default','core','content-primary');
+  o+=sb(248,'Inverse','on-inverse core','on-inverse content-primary');
+  // cards
+  const cd=(y,s)=>`<rect x="860" y="${y}" width="170" height="104" rx="12" fill="${s.core[1]}" stroke="rgba(0,0,0,.12)"/><text class="ct" x="876" y="${y+34}" fill="${s['content-primary'][1]}">Your pension</text><text class="cb" x="876" y="${y+56}" fill="${s['content-primary'][1]}" opacity=".85">£48,210</text><rect x="876" y="${y+68}" width="70" height="24" rx="6" fill="${s['highlight-core'][1]}"/><text class="cb" x="886" y="${y+84}" fill="${s['highlight-content'][1]}">Top up</text>`;
+  o+=cd(88,df)+cd(248,iv);
+  o+=`<text class="sub" x="20" y="420">Change one primitive and every role, brand and screen that points at it updates.</text><text class="sub" x="20" y="440">Add a client: new primitives + two Theme modes. Surface and components never change.</text>`;
+  $('flow').innerHTML=o;
+}
+function drawMatrix(){
+  const ks=['default','subtle','inverse','brand'];let h='<div></div>'+ks.map(k=>`<div class="mh">${NAMES[k]}</div>`).join('');
+  for(const b of Object.keys(D)){h+=`<div class="rh">${BN[b]}</div>`;for(const k of ks){const s=D[b][k];h+=`<div class="demo" style="background:${s.core[1]};color:${s['content-primary'][1]}"><span class="t">Your pension</span><span class="b" style="background:${s['highlight-core'][1]};color:${s['highlight-content'][1]}">Top up</span></div>`;}}
+  $('matrix').innerHTML=h;
+}
+drawMatrix();
+document.querySelectorAll('.tabs button').forEach(x=>x.addEventListener('click',()=>{show(x.dataset.b);try{localStorage.setItem('ks-brand',x.dataset.b)}catch(e){}}));
+let start='smart'; try{start=localStorage.getItem('ks-brand')||'smart'}catch(e){}
+show(D[start]?start:'smart');
+</script>
